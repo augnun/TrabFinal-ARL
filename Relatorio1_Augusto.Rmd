@@ -1,0 +1,91 @@
+---
+title: "Análise Exploratória - Trabalho Final ARL"
+author: "Augusto Cesar Ribeiro Nunes - 13/0103004"
+date: "June 13, 2016"
+output: pdf_document
+---
+
+# Escolhendo conjunto amostral e de validação
+
+```{r amostragem}
+require(dplyr)
+dados <- read.csv("dados_trabalho.csv", sep = ",")
+set.seed(2321421)
+dados.amostra <- sample_n(dados, 220)
+dados.validacao <- dados[dados$id %in% dados.amostra$id,]
+```
+
+# Análise Descritiva Univariada
+```{r univar_desc}
+require(ggplot2)
+str(dados.amostra)
+
+summary(dados.amostra)
+```
+
+## Var área da cidade (X3)
+```{r}
+# Var X3 (Área)
+ggplot(dados.amostra, aes(dados.amostra$x3)) + 
+  labs(x = expression(Área (milhas^2), y = "Densidade")) +
+  ggtitle("Gráfico de Densidade da Área das Cidades") +
+  geom_density()
+ggplot(dados.amostra, aes(log(dados.amostra$x3))) + 
+  labs(x = expression(Área (milhas^2), y = "Densidade")) +
+  ggtitle("Gráfico de Densidade de log(Área) das Cidades") +
+  geom_density()
+
+ggplot(dados.amostra, aes(y=dados.amostra$x3, x=factor(0))) + 
+  labs(y = expression(Área (milhas^2)), x = NULL) +
+  ggtitle("Boxplot da Área das Cidades") +
+  geom_boxplot()
+
+ggplot(dados.amostra, aes(y=log(dados.amostra$x3), x=factor(0))) + 
+  labs(y = expression(Área (milhas^2)), x = NULL) +
+  ggtitle("Boxplot de log(Área) das Cidades") +
+  geom_boxplot()
+
+
+#Shapiro-Wilk para Normalidade
+shapiro.test(dados.amostra$x3)
+shapiro.test(log1p(dados.amostra$x3))
+
+
+
+#Kolmogorov-Smirnov para Normalidade
+ks.test(dados.amostra$x3, "pnorm")
+ks.test(log(dados.amostra$x3), "pnorm")
+
+
+#Menor Cidade
+dados.amostra[which(dados.amostra$x3 == min(dados.amostra$x3)),2:3]
+
+#Maior Cidade
+dados.amostra[which(dados.amostra$x3 == max(dados.amostra$x3)),2:3]
+```
+  
+  Os testes de aderência sempre rejeitam a hipótese de normalidade porque seu poder é muito alto com 220 obs. 
+
+
+## Var População da Cidade (X4)
+
+```{r}
+ggplot(dados.amostra, aes(dados.amostra$x4)) + 
+  labs(x = "População", y = "Densidade") +
+  ggtitle("Densidade da População das Cidades") +
+  geom_density()
+
+ggplot(dados.amostra, aes(log(dados.amostra$x4))) + 
+  labs(x = "População", y = "Densidade") +
+  ggtitle("Densidade do log(População) das Cidades") +
+  geom_density()
+
+ggplot(dados.amostra, aes(1/dados.amostra$x4)) + 
+  labs(x = "População", y = "Densidade") +
+  ggtitle("Densidade de 1/População das Cidades") +
+  geom_density()
+```
+
+
+
+
