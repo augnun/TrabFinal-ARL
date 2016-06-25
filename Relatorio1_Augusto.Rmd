@@ -13,6 +13,7 @@ dados <- read.csv("dados_trabalho.csv", sep = ",")
 set.seed(2321421)
 dados.amostra <- sample_n(dados, 220)
 dados.validacao <- dados[!(dados$id %in% dados.amostra$id),]
+dados.amostra$X16 <- factor(dados.amostra$x16, labels = c("Nordeste", "Centro-Norte", "Sul", "Oeste"))
 ```
 
 # Análise Descritiva Univariada
