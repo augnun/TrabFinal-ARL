@@ -1,38 +1,40 @@
 ---
-title: "Análise Exploratória - Trabalho Final ARL"
+title: "Análise Exploratória - Trabalho Final Análise de Regressão Linear"
 author: "Augusto Cesar Ribeiro Nunes - 13/0103004"
-date: "June 13, 2016"
+date: "13 de junho 2016"
 output: pdf_document
 ---
+# Introdução
+
+Dentre as inúmeras fases fundamentais de uma investigação estatística, temos de ter um bom retrato exploratório sobre os dados. Este trabalho tem como intuito fomentar o estudo que seguirá nos passos posteriores, identificando possíveis pontos de dificuldade metodológica e pragmática. Este relatório apresenta de forma breve os pontos notáveis na amostra selecionada para o Trabalho Final da Disciplina Análise de Regressão Linear, ministrada pela Professora Maria Teresa Leão Costa, do Departamento de Estatística da Universidade de Brasília em junho de 2016.
 
 # Escolhendo conjunto amostral e de validação
 
-```{r amostragem}
+```{r amostragem, warning=FALSE,message=FALSE,cache=TRUE}
 require(dplyr)
 dados <- read.csv("dados_trabalho.csv", sep = ",")
+dados$x16 <- factor(dados$x16, labels = c("Northeast", "Midwest", "South", "West"))
 set.seed(2321421)
 dados.amostra <- sample_n(dados, 220)
 dados.validacao <- dados[!(dados$id %in% dados.amostra$id),]
 ```
 
+O conjunto de dados apresentado para o trabalho é referente aos Estados Unidos da América, um país de muitos contrastes sócio-demográficos. Alguns destes são evidentes nas variáveis apuradas, outros são mais discretos.
+
 # Análise Descritiva Univariada
-```{r univar_desc}
+```{r univar_desc, echo = FALSE}
 require(ggplot2)
 str(dados.amostra)
 
 summary(dados.amostra)
 ```
 
-## Var área da cidade (X3)
-```{r}
-# Var X3 (Área)
+## Variável área da cidade (X3)
+```{r var_X3, fig.cap="Distribuição de Áreas das Cidades"}
+# Variável X3 (Área)
 ggplot(dados.amostra, aes(dados.amostra$x3)) + 
   labs(x = expression(Área (milhas^2), y = "Densidade")) +
   ggtitle("Gráfico de Densidade da Área das Cidades") +
-  geom_density()
-ggplot(dados.amostra, aes(log(dados.amostra$x3))) + 
-  labs(x = expression(Área (milhas^2), y = "Densidade")) +
-  ggtitle("Gráfico de Densidade de log(Área) das Cidades") +
   geom_density()
 
 ggplot(dados.amostra, aes(y=dados.amostra$x3, x=factor(0))) + 
@@ -40,19 +42,11 @@ ggplot(dados.amostra, aes(y=dados.amostra$x3, x=factor(0))) +
   ggtitle("Boxplot da Área das Cidades") +
   geom_boxplot()
 
-ggplot(dados.amostra, aes(y=log(dados.amostra$x3), x=factor(0))) + 
-  labs(y = expression(Área (milhas^2)), x = NULL) +
-  ggtitle("Boxplot de log(Área) das Cidades") +
-  geom_boxplot()
-
 
 #Shapiro-Wilk para Normalidade
 shapiro.test(dados.amostra$x3)
-shapiro.test(log(dados.amostra$x3))
-
 #Kolmogorov-Smirnov para Normalidade
 ks.test(dados.amostra$x3, "pnorm")
-ks.test(log(dados.amostra$x3), "pnorm")
 
 
 #Menor Cidade (área)
@@ -62,14 +56,11 @@ dados.amostra[which(dados.amostra$x3 == min(dados.amostra$x3)),2:3]
 dados.amostra[which(dados.amostra$x3 == max(dados.amostra$x3)),2:3]
 ```
   
-  Os testes de aderência sempre rejeitam a hipótese de normalidade porque seu poder é muito alto com 220 obs. 
 
+## Variável População da Cidade (X4)
 
-## Var População da Cidade (X4)
-
-```{r}
+```{r, fig.cap="Distribuição de Populações das Cidades"}
 summary(dados.amostra$x4)
-sd(dados.amostra$x4)
 
 #Density
 ggplot(dados.amostra, aes(dados.amostra$x4)) + 
@@ -77,42 +68,17 @@ ggplot(dados.amostra, aes(dados.amostra$x4)) +
   ggtitle("Densidade da População das Cidades") +
   geom_density()
 
-ggplot(dados.amostra, aes(log(dados.amostra$x4))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade do log(População) das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(1/dados.amostra$x4)) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de 1/População das Cidades") +
-  geom_density()
-
-
 #Boxplot
 ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x4)) + 
   labs(x = "População", y = "Densidade") +
   ggtitle("Densidade da População das Cidades") +
   geom_boxplot()
 
-ggplot(dados.amostra, aes(x=factor(0),y=log(dados.amostra$x4))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade do log(População) das Cidades") +
-  geom_boxplot()
-
-ggplot(dados.amostra, aes(y=1/dados.amostra$x4, x=factor(0))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de 1/População das Cidades") +
-  geom_boxplot()
-
 #Teste de Shapiro-Wilk para normalidade
 shapiro.test(dados.amostra$x4)
-shapiro.test(log(dados.amostra$x4))
-shapiro.test(1/(dados.amostra$x4))
 
 #Teste de Kolmogorov-Smirnov para normalidade
 ks.test(dados.amostra$x4, "pnorm")
-ks.test(log(dados.amostra$x4), "pnorm")
-ks.test(1/(dados.amostra$x4), "pnorm")
 
 
 #Menor Cidade (população)
@@ -135,9 +101,9 @@ dados.amostra[which(dados.amostra$x4 == max(dados.amostra$x4)),c(2,3,5)]
 O Condado de Cook, em Illinois, contém Chicago (a terceira maior cidade dos EUA), é o segundo mais populoso dos EUA, após Los Angeles. 
 
 
-# Variável % da população entre 18 e 34 anos de idade (X5)
+## Variável % da população entre 18 e 34 anos de idade (X5)
 
-```{r}
+```{r, fig.cap="Distribuição de População entre 18 e 34 anos de idade das Cidades"}
 summary(dados.amostra$x5)
 
 #Density
@@ -146,74 +112,39 @@ ggplot(dados.amostra, aes(dados.amostra$x5)) +
   ggtitle("Densidade da População Jovem das Cidades") +
   geom_density()
 
-ggplot(dados.amostra, aes(log(dados.amostra$x5))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade do log(População Jovem) das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(1/dados.amostra$x5)) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de 1/População Jovem das Cidades") +
-  geom_density()
-
-
 #Boxplot
 ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x5)) + 
   labs(x = "População", y = "Densidade") +
   ggtitle("Distribuição da População Jovem das Cidades") +
   geom_boxplot()
 
-ggplot(dados.amostra, aes(x=factor(0),y=log(dados.amostra$x5))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição do log(População Jovem) das Cidades") +
-  geom_boxplot()
-
-ggplot(dados.amostra, aes(y=1/dados.amostra$x5, x=factor(0))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição de 1/(População Jovem) das Cidades") +
-  geom_boxplot()
-
 
 
 #Teste de Shapiro-Wilk para normalidade
 shapiro.test(dados.amostra$x5)
-shapiro.test(log(dados.amostra$x5))
-shapiro.test(1/(dados.amostra$x5))
 
 #Teste de Kolmogorov-Smirnov para normalidade
 ks.test(dados.amostra$x5, "pnorm")
-ks.test(log(dados.amostra$x5), "pnorm")
-ks.test(1/(dados.amostra$x5), "pnorm")
 
 
-#Menor Cidade (população jovem)
+#Menor Cidade
 dados.amostra[which(dados.amostra$x5 == min(dados.amostra$x5)),c(2,3,6)]
 
 dados.amostra[which(dados.amostra$x5 == median(dados.amostra$x5)),c(2,3,6)]
 
-#Maior Cidade (população jovem)
+#Maior Cidade
 dados.amostra[which(dados.amostra$x5 == max(dados.amostra$x5)),c(2,3,6)]
 ```
 
-# Variável % da população com mais de 65 anos de idade (X6)
+## Variável % da população com mais de 65 anos de idade (X6)
 
-```{r}
+```{r, fig.cap="Distribuição de População com mais de 65 anos de idade das Cidades"}
 summary(dados.amostra$x6)
 
 #Density
 ggplot(dados.amostra, aes(dados.amostra$x6)) + 
   labs(x = "População", y = "Densidade") +
   ggtitle("Densidade da População Idosa das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(log(dados.amostra$x6))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade do log(População Idosa) das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(1/dados.amostra$x6)) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de 1/População Idosa das Cidades") +
   geom_density()
 
 
@@ -223,57 +154,35 @@ ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x6)) +
   ggtitle("Distribuição da População Idosa das Cidades") +
   geom_boxplot()
 
-ggplot(dados.amostra, aes(x=factor(0),y=log(dados.amostra$x6))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição do log(População Idosa) das Cidades") +
-  geom_boxplot()
 
-ggplot(dados.amostra, aes(y=1/dados.amostra$x6, x=factor(0))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição de 1/(População Idosa) das Cidades") +
-  geom_boxplot()
 
 
 
 #Teste de Shapiro-Wilk para normalidade
 shapiro.test(dados.amostra$x6)
-shapiro.test(log(dados.amostra$x6))
-shapiro.test(1/(dados.amostra$x6))
 
 #Teste de Kolmogorov-Smirnov para normalidade
 ks.test(dados.amostra$x6, "pnorm")
-ks.test(log(dados.amostra$x6), "pnorm")
-ks.test(1/(dados.amostra$x6), "pnorm")
 
 
-#Menor Cidade (população idosa)
+#Menor Cidade
 dados.amostra[which(dados.amostra$x6 == min(dados.amostra$x6)),c(2,3,7)]
 
 dados.amostra[which(dados.amostra$x6 == median(dados.amostra$x6)),c(2,3,7)]
 
-#Maior Cidade (população idosa)
+#Maior Cidade
 dados.amostra[which(dados.amostra$x6 == max(dados.amostra$x6)),c(2,3,7)]
 ```
 
 
-# Variável \# de Médicos Ativos (X7)
-```{r}
+## Variável Número de Médicos Ativos (X7)
+```{r, fig.cap="Distribuição de Médicos Ativos das Cidades"}
 summary(dados.amostra$x7)
 
 #Density
 ggplot(dados.amostra, aes(dados.amostra$x7)) + 
   labs(x = "População", y = "Densidade") +
   ggtitle("Densidade de Médicos Ativos das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(log(dados.amostra$x7))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade do log(Médicos Ativos) das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(1/dados.amostra$x7)) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de 1/Médicos Ativos das Cidades") +
   geom_density()
 
 
@@ -283,56 +192,33 @@ ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x7)) +
   ggtitle("Distribuição da Médicos Ativos das Cidades") +
   geom_boxplot()
 
-ggplot(dados.amostra, aes(x=factor(0),y=log(dados.amostra$x7))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição do log(Médicos Ativos) das Cidades") +
-  geom_boxplot()
-
-ggplot(dados.amostra, aes(y=1/dados.amostra$x7, x=factor(0))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição de 1/(Médicos Ativos) das Cidades") +
-  geom_boxplot()
 
 
 
 #Teste de Shapiro-Wilk para normalidade
 shapiro.test(dados.amostra$x7)
-shapiro.test(log(dados.amostra$x7))
-shapiro.test(1/(dados.amostra$x7))
 
 #Teste de Kolmogorov-Smirnov para normalidade
 ks.test(dados.amostra$x7, "pnorm")
-ks.test(log(dados.amostra$x7), "pnorm")
-ks.test(1/(dados.amostra$x7), "pnorm")
 
 
-#Menor Cidade (população idosa)
+#Menor Cidade
 dados.amostra[which(dados.amostra$x7 == min(dados.amostra$x7)),c(2,3,8)]
 
 dados.amostra[which(dados.amostra$x7 == median(dados.amostra$x7)),c(2,3,8)]
 
-#Maior Cidade (população idosa)
+#Maior Cidade
 dados.amostra[which(dados.amostra$x7 == max(dados.amostra$x7)),c(2,3,8)]
 ```
 
-# Variável \# de Leitos Hospitalares (X8)
-```{r}
+## Variável Número de Leitos Hospitalares (X8)
+```{r, fig.cap="Distribuição de Leitos Hospitalares das Cidades"}
 summary(dados.amostra$x8)
 
 #Density
 ggplot(dados.amostra, aes(dados.amostra$x8)) + 
   labs(x = "População", y = "Densidade") +
   ggtitle("Densidade de Leitos Hospitalares das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(log(dados.amostra$x8))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade do log(Leitos Hospitalares) das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(1/dados.amostra$x8)) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de 1/(Leitos Hospitalares) das Cidades") +
   geom_density()
 
 
@@ -342,28 +228,12 @@ ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x8)) +
   ggtitle("Distribuição de Leitos Hospitalares das Cidades") +
   geom_boxplot()
 
-ggplot(dados.amostra, aes(x=factor(0),y=log(dados.amostra$x8))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição do log(Leitos Hospitalares) das Cidades") +
-  geom_boxplot()
-
-ggplot(dados.amostra, aes(y=1/dados.amostra$x8, x=factor(0))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição de 1/(Leitos Hospitalares) das Cidades") +
-  geom_boxplot()
-
-
 
 #Teste de Shapiro-Wilk para normalidade
 shapiro.test(dados.amostra$x8)
-shapiro.test(log(dados.amostra$x8))
-shapiro.test(1/(dados.amostra$x8))
 
 #Teste de Kolmogorov-Smirnov para normalidade
 ks.test(dados.amostra$x8, "pnorm")
-ks.test(log(dados.amostra$x8), "pnorm")
-ks.test(1/(dados.amostra$x8), "pnorm")
-
 
 #Menor Cidade (população idosa)
 dados.amostra[which(dados.amostra$x8 == min(dados.amostra$x8)),c(2,3,9)]
@@ -375,8 +245,8 @@ dados.amostra[which(dados.amostra$x8 == max(dados.amostra$x8)),c(2,3,9)]
 ```
 
 
-# Variável Total de Crimes (X9)
-```{r}
+## Variável Total de Crimes (X9)
+```{r, fig.cap="Distribuição do Total de Crimes das Cidades"}
 summary(dados.amostra$x9)
 
 #Density
@@ -385,15 +255,6 @@ ggplot(dados.amostra, aes(dados.amostra$x9)) +
   ggtitle("Densidade de Total de Crimes das Cidades") +
   geom_density()
 
-ggplot(dados.amostra, aes(log(dados.amostra$x9))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade do log(Total de Crimes) das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(1/dados.amostra$x9)) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de 1/(Total de Crimes) das Cidades") +
-  geom_density()
 
 
 #Boxplot
@@ -402,41 +263,28 @@ ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x9)) +
   ggtitle("Distribuição de Total de Crimes das Cidades") +
   geom_boxplot()
 
-ggplot(dados.amostra, aes(x=factor(0),y=log(dados.amostra$x9))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição do log(Total de Crimes) das Cidades") +
-  geom_boxplot()
-
-ggplot(dados.amostra, aes(y=1/dados.amostra$x9, x=factor(0))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição de 1/(Total de Crimes) das Cidades") +
-  geom_boxplot()
 
 
 
 #Teste de Shapiro-Wilk para normalidade
 shapiro.test(dados.amostra$x9)
-shapiro.test(log(dados.amostra$x9))
-shapiro.test(1/(dados.amostra$x9))
 
 #Teste de Kolmogorov-Smirnov para normalidade
 ks.test(dados.amostra$x9, "pnorm")
-ks.test(log(dados.amostra$x9), "pnorm")
-ks.test(1/(dados.amostra$x9), "pnorm")
 
 
-#Menor Cidade (população idosa)
+#Menor Cidade
 dados.amostra[which(dados.amostra$x9 == min(dados.amostra$x9)),c(2,3,10)]
 
 dados.amostra[which(dados.amostra$x9 == median(dados.amostra$x9)),c(2,3,10)]
 
-#Maior Cidade (população idosa)
+#Maior Cidade
 dados.amostra[which(dados.amostra$x9 == max(dados.amostra$x9)),c(2,3,10)]
 ```
 
 
-# Variável \% que concluíram _high school_ (X10)
-```{r}
+## Variável % que concluíram _high school_ (X10)
+```{r, fig.cap="Distribuição do % de concluintes do high school das Cidades"}
 summary(dados.amostra$x10)
 
 #Density
@@ -445,15 +293,7 @@ ggplot(dados.amostra, aes(dados.amostra$x10)) +
   ggtitle("Densidade de Concluintes do HS das Cidades") +
   geom_density()
 
-ggplot(dados.amostra, aes(log(dados.amostra$x10))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade do log(Concluintes do HS) das Cidades") +
-  geom_density()
 
-ggplot(dados.amostra, aes(1/dados.amostra$x10)) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de 1/(Concluintes do HS) das Cidades") +
-  geom_density()
 
 
 #Boxplot
@@ -462,118 +302,69 @@ ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x10)) +
   ggtitle("Distribuição de Concluintes do HS das Cidades") +
   geom_boxplot()
 
-ggplot(dados.amostra, aes(x=factor(0),y=log(dados.amostra$x10))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição do log(Concluintes do HS) das Cidades") +
-  geom_boxplot()
-
-ggplot(dados.amostra, aes(y=1/dados.amostra$x10, x=factor(0))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição de 1/(Concluintes do HS) das Cidades") +
-  geom_boxplot()
-
 
 
 #Teste de Shapiro-Wilk para normalidade
 shapiro.test(dados.amostra$x10)
-shapiro.test(log(dados.amostra$x10))
-shapiro.test(1/(dados.amostra$x10))
+
 
 #Teste de Kolmogorov-Smirnov para normalidade
 ks.test(dados.amostra$x10, "pnorm")
-ks.test(log(dados.amostra$x10), "pnorm")
-ks.test(1/(dados.amostra$x10), "pnorm")
 
-
-#Menor Cidade (população idosa)
+#Menor Cidade
 dados.amostra[which(dados.amostra$x10 == min(dados.amostra$x10)),c(2,3,11)]
 
 dados.amostra[which(dados.amostra$x10 == median(dados.amostra$x10)),c(2,3,11)]
 
-#Maior Cidade (população idosa)
+#Maior Cidade
 dados.amostra[which(dados.amostra$x10 == max(dados.amostra$x10)),c(2,3,11)]
 ```
 
-#Variável \% de bacharéis (V11)
+##Variável % de bachareis (V11)
 
-```{r}
+```{r, fig.cap="Distribuição de % de bachareis das Cidades"}
 summary(dados.amostra$x11)
 
 #Density
 ggplot(dados.amostra, aes(dados.amostra$x11)) + 
   labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de % de bacharéis das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(log(dados.amostra$x11))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade do log(% de bacharéis) das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(1/dados.amostra$x11)) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de 1/(% de bacharéis) das Cidades") +
+  ggtitle("Densidade de % de bachareis das Cidades") +
   geom_density()
 
 
 #Boxplot
 ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x11)) + 
   labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição de % de bacharéis das Cidades") +
-  geom_boxplot()
-
-ggplot(dados.amostra, aes(x=factor(0),y=log(dados.amostra$x11))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição do log(% de bacharéis) das Cidades") +
-  geom_boxplot()
-
-ggplot(dados.amostra, aes(y=1/dados.amostra$x11, x=factor(0))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição de 1/(% de bacharéis) das Cidades") +
+  ggtitle("Distribuição de % de bachareis das Cidades") +
   geom_boxplot()
 
 
 
 #Teste de Shapiro-Wilk para normalidade
 shapiro.test(dados.amostra$x11)
-shapiro.test(log(dados.amostra$x11))
-shapiro.test(1/(dados.amostra$x11))
-
 #Teste de Kolmogorov-Smirnov para normalidade
 ks.test(dados.amostra$x11, "pnorm")
-ks.test(log(dados.amostra$x11), "pnorm")
-ks.test(1/(dados.amostra$x11), "pnorm")
 
 
-#Menor Cidade (população idosa)
+#Menor Cidade
 dados.amostra[which(dados.amostra$x11 == min(dados.amostra$x11)),c(2,3,12)]
 
 dados.amostra[which(dados.amostra$x11 == median(dados.amostra$x11)),c(2,3,12)]
 
-#Maior Cidade (população idosa)
+#Maior Cidade
 dados.amostra[which(dados.amostra$x11 == max(dados.amostra$x11)),c(2,3,12)]
 ```
 
 
 
-# Variável \% abaixo do nível de pobreza (X12)
-```{r}
+## Variável % abaixo do nível de pobreza (X12)
+```{r, fig.cap="Distribuição de % abaixo do nível de pobreza das Cidades"}
 summary(dados.amostra$x12)
 
 #Density
 ggplot(dados.amostra, aes(dados.amostra$x12)) + 
   labs(x = "População", y = "Densidade") +
   ggtitle("Densidade de % abaixo do nível \nde pobreza das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(log(dados.amostra$x12))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade do log(% abaixo do nível\n de pobreza) das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(1/dados.amostra$x12)) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de 1/(% abaixo do nível \nde pobreza) das Cidades") +
   geom_density()
 
 
@@ -583,56 +374,32 @@ ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x12)) +
   ggtitle("Distribuição de % abaixo do nível \nde pobreza das Cidades") +
   geom_boxplot()
 
-ggplot(dados.amostra, aes(x=factor(0),y=log(dados.amostra$x12))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição do log(% abaixo do nível \nde pobreza) das Cidades") +
-  geom_boxplot()
-
-ggplot(dados.amostra, aes(y=1/dados.amostra$x12, x=factor(0))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição de 1/(% abaixo do nível \nde pobreza) das Cidades") +
-  geom_boxplot()
 
 
 
 #Teste de Shapiro-Wilk para normalidade
 shapiro.test(dados.amostra$x12)
-shapiro.test(log(dados.amostra$x12))
-shapiro.test(1/(dados.amostra$x12))
-
 #Teste de Kolmogorov-Smirnov para normalidade
 ks.test(dados.amostra$x12, "pnorm")
-ks.test(log(dados.amostra$x12), "pnorm")
-ks.test(1/(dados.amostra$x12), "pnorm")
 
 
-#Menor Cidade (população idosa)
+#Menor Cidade
 dados.amostra[which(dados.amostra$x12 == min(dados.amostra$x12)),c(2,3,13)]
 
 dados.amostra[which(dados.amostra$x12 == median(dados.amostra$x12)),c(2,3,13)]
 
-#Maior Cidade (população idosa)
+#Maior Cidade
 dados.amostra[which(dados.amostra$x12 == max(dados.amostra$x12)),c(2,3,13)]
 ```
 
-# Variável \% de desempregados (X13)
-```{r}
+## Variável % de desempregados (X13)
+```{r, fig.cap="Distribuição de % de desempregados das Cidades"}
 summary(dados.amostra$x13)
 
 #Density
 ggplot(dados.amostra, aes(dados.amostra$x13)) + 
   labs(x = "População", y = "Densidade") +
   ggtitle("Densidade de % de desempregados das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(log(dados.amostra$x13))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade do log(% de desempregados) das Cidades") +
-  geom_density()
-
-ggplot(dados.amostra, aes(1/dados.amostra$x13)) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Densidade de 1/(% de desempregados) das Cidades") +
   geom_density()
 
 
@@ -642,15 +409,6 @@ ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x13)) +
   ggtitle("Distribuição de % de desempregados das Cidades") +
   geom_boxplot()
 
-ggplot(dados.amostra, aes(x=factor(0),y=log(dados.amostra$x13))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição do log(% de desempregados) das Cidades") +
-  geom_boxplot()
-
-ggplot(dados.amostra, aes(y=1/dados.amostra$x13, x=factor(0))) + 
-  labs(x = "População", y = "Densidade") +
-  ggtitle("Distribuição de 1/(% de desempregados) das Cidades") +
-  geom_boxplot()
 
 
 
@@ -665,12 +423,151 @@ ks.test(log(dados.amostra$x13), "pnorm")
 ks.test(1/(dados.amostra$x13), "pnorm")
 
 
-#Menor Cidade (população idosa)
+#Menor Cidade
 dados.amostra[which(dados.amostra$x13 == min(dados.amostra$x13)),c(2,3,14)]
 
 dados.amostra[which(dados.amostra$x13 == median(dados.amostra$x13)),c(2,3,14)]
 
-#Maior Cidade (população idosa)
+#Maior Cidade
 dados.amostra[which(dados.amostra$x13 == max(dados.amostra$x13)),c(2,3,14)]
 ```
+
+
+
+## Variável Renda Per Capita (X14)
+```{r, fig.cap="Distribuição de Renda per capita das Cidades"}
+summary(dados.amostra$x14)
+
+#Density
+ggplot(dados.amostra, aes(dados.amostra$x14)) + 
+  labs(x = "População", y = "Densidade") +
+  ggtitle("Densidade de renda per capita das Cidades") +
+  geom_density()
+
+
+#Boxplot
+ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x14)) + 
+  labs(x = "População", y = "Densidade") +
+  ggtitle("Distribuição de renda per capita das Cidades") +
+  geom_boxplot()
+
+
+#Teste de Shapiro-Wilk para normalidade
+shapiro.test(dados.amostra$x14)
+
+#Teste de Kolmogorov-Smirnov para normalidade
+ks.test(dados.amostra$x14, "pnorm")
+
+
+#Menor Cidade
+dados.amostra[which(dados.amostra$x14 == min(dados.amostra$x14)),c(2,3,15)]
+
+dados.amostra[which(dados.amostra$x14 == median(dados.amostra$x14)),c(2,3,15)]
+
+#Maior Cidade
+dados.amostra[which(dados.amostra$x14 == max(dados.amostra$x14)),c(2,3,15)]
+```
+
+##Variável Renda Total da Cidade (em milhões de dólares) (X15)
+```{r, fig.cap="Distribuição de Renda das Cidades (milhões de US$)"}
+summary(dados.amostra$x15)
+
+#Density
+ggplot(dados.amostra, aes(dados.amostra$x15)) + 
+  labs(x = "População", y = "Densidade") +
+  ggtitle("Densidade de renda da cidade (milhões) das Cidades") +
+  geom_density()
+
+
+#Boxplot
+ggplot(dados.amostra, aes(x=factor(0),y=dados.amostra$x15)) + 
+  labs(x = "População", y = "Densidade") +
+  ggtitle("Distribuição de renda da cidade (milhões) das Cidades") +
+  geom_boxplot()
+
+
+
+
+#Teste de Shapiro-Wilk para normalidade
+shapiro.test(dados.amostra$x15)
+
+#Teste de Kolmogorov-Smirnov para normalidade
+ks.test(dados.amostra$x15, "pnorm")
+
+
+#Menor Cidade
+dados.amostra[which(dados.amostra$x15 == min(dados.amostra$x15)),c(2,3,16)]
+
+dados.amostra[which(dados.amostra$x15 == median(dados.amostra$x15)),c(2,3,16)]
+
+#Maior Cidade
+dados.amostra[which(dados.amostra$x15 == max(dados.amostra$x15)),c(2,3,16)]
+```
+
+
+## Variável região geográfica (X16)
+```{r}
+summary(dados.amostra$x16)
+
+#Density
+ggplot(dados.amostra, aes(dados.amostra$x16)) + 
+  labs(x = "População", y = "Densidade") +
+  ggtitle("Região Geográfica das Cidades") +
+  geom_bar()
+```
+
+
+
+# Análise bivariada
+
+Análise baseada particularmente nas hipóteses de trabalho apresentadas pelo pesquisador, especificamente:
+
+ * Espera-se que o número de médicos ativos em uma cidade esteja relacionado com a sua população total, o número de leitos hospitalares e a renda total. Suspeita-se também que varie segundo a região.
+ * A violência medida através da taxa de crimes por 100 000 habitantes está associada a características sócio-demográficas da “cidade”.
+
+## Matriz de correlações
+```{r}
+cor(dados.amostra[,4:16])
+```
+
+Correlações (lineares) relevantes (em módulo)
+
+* __População Total__: fortemente correlacionada com "Número de Médicos ativos" (Correlação $~.92$), "Número de leitos hospitalares" (Correlação $ ~ .90$), "Número de Crimes" (Correlação $~ .95$) e "Renda Total" (Correlação $~ .98$);
+*  __Número de médicos ativos__: e "Número de leitos ativos" (Correlação $.95$), "Número de crimes", aparentemente uma correlação espúria que pode ser explicada pela forte correlação de ambas as variáveis com a variável "População Total" e, finalmente "Renda Total" (Correlação $.93$). Interessantemente, a correlação não é forte com a Renda Per Capita das Cidades (Correlação $.30$);
+
+Ou seja, as correlações lineares sustentam algumas das hipóteses de trabalho do pesquisador, que devem ser testadas em etapa posterior.
+
+* 
+
+## Análise bivariada da População Total das Cidades (X4) em relação ao Número de Médicos Ativos (X7), Número de Leitos Hospitalares (X8), Número de Crimes (X9) e Renda Total (X15)
+
+```{r, fig.cap="Matriz de Gráficos de Densidade, Dispersão e Correlações para os log-valores dos pares de variáveis"}
+require(GGally)
+ggpairs(log(dados.amostra[,c(5,8,9,10,16)]))
+```
+
+A transformação logarítmica foi aplicada a todos os valores de cada variável nos gráficos acima para facilitar a visualização dos comportamentos, daí os valores diferentes para as correlações.
+
+
+## Análise bivariada do Número de Médicos Ativos (X7) em relação à Região Geográfica da Cidade (X16)
+```{r, fig.cap="Matriz de Gráficos de Densidade, Barras e Boxplot para os pares de variáveis"}
+ggpairs(dados.amostra[,c(8,17)])
+```
+
+Aparentemente, há sim diferença entre as distribuições de Médicos Ativos nas diferentes regiões. Tal suspeita é ainda mais substancial quando levamos em conta o resultado do Teste de Kruskal-Wallis para igualdade da mediana entre os quatro grupos:
+```{r}
+kruskal.test(dados.amostra[,8], dados.amostra[,17])
+```
+
+Mesmo levando em conta que trata-se de uma comparação múltipla entre 4 grupos e portanto o nível de aceitação deveria ser ainda menor que os 0.05 usuais, o teste (robusto a valores discrepantes) pode servir de ponto de partida para esta etapa do estudo.
+
+
+## Análise bivariada da Taxa de Crimes (X17) em relação à Área da Cidade (X3), Proporção de Pessoas entre 18 e 34 anos de idade (X5), % de concluintes do ensino médio (X10), e Renda per capita (X14)
+
+```{r, fig.cap="Matriz de Gráficos de Densidade, Barras e Boxplot para os pares de variáveis"}
+dados.amostra[,18] <- dados.amostra$x4/100000
+ggpairs(dados.amostra[,c(18,4,6,11,15)])
+```
+
+A Taxa de Crimes por 100000 habitantes é a medida demográfica mais utilizada para representar este tipo de fenômeno, por não penalizar tanto cidades mais populosas, que naturalmente têm um número absoluto maior de crimes graças aos maior número de habitantes. No entanto, a única variável que mostrou uma correlação linear moderada com esta variável transformada foi a renda per capita, o que também é absolutamente razoável.
 
