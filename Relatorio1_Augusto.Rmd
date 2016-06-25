@@ -17,6 +17,7 @@ dados$x16 <- factor(dados$x16, labels = c("Northeast", "Midwest", "South", "West
 set.seed(2321421)
 dados.amostra <- sample_n(dados, 220)
 dados.validacao <- dados[!(dados$id %in% dados.amostra$id),]
+dados.amostra$X16 <- factor(dados.amostra$x16, labels = c("Nordeste", "Centro-Norte", "Sul", "Oeste"))
 ```
 
 O conjunto de dados apresentado para o trabalho é referente aos Estados Unidos da América, um país de muitos contrastes sócio-demográficos. Alguns destes são evidentes nas variáveis apuradas, outros são mais discretos.
